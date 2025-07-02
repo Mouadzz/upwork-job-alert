@@ -17,6 +17,14 @@ export default defineConfig({
           __dirname,
           "src/content-scripts/utils.js"
         ),
+        "content-scripts/parse-job-section": path.resolve(
+          __dirname,
+          "src/content-scripts/parse-job-section.js"
+        ),
+        "content-scripts/telegram-sender": path.resolve(
+          __dirname,
+          "src/content-scripts/telegram-sender.js"
+        ),
         "content-scripts/job-checker": path.resolve(
           __dirname,
           "src/content-scripts/job-checker.js"
@@ -32,21 +40,20 @@ export default defineConfig({
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Keep background.js in root of dist
           if (chunkInfo.name === "background") {
             return "background.js";
           }
-          // Keep content scripts in their folder structure
           if (chunkInfo.name.startsWith("content-scripts/")) {
             return `${chunkInfo.name}.js`;
           }
-          // Default for other files
           return `assets/${chunkInfo.name}-[hash].js`;
         },
         chunkFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
+    // Add these options to prevent minification issues
+    minify: false, // Try this temporarily to see if it fixes the duplicate 'c' variable issue
     outDir: "dist",
     emptyOutDir: true,
   },

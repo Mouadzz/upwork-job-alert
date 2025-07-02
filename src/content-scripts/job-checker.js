@@ -1,126 +1,76 @@
-function parseJobSection(section) {
-  try {
-    const titleElement = section.querySelector(".job-tile-title a[href]");
+console.log("job-checker.js loaded");
 
-    if (!titleElement) {
-      log("Could not find job title in section");
-      return null;
-    }
+let firstJobIdBestMatch = null;
+let firstJobIdMostRecent = null;
+let isFirstRunBestMatch = true;
+let isFirstRunMostRecent = true;
 
-    // Extract job ID from href
-    const href = titleElement.getAttribute("href");
-    const jobIdMatch = href.match(/~(\d+)/);
-    const jobId = jobIdMatch ? jobIdMatch[1] : null;
+function checkForNewJobs(tabIndex, currentJobs) {
+  const tabName = tabIndex === 0 ? "Best Match" : "Most Recent";
+  const savedFirstJobId =
+    tabIndex === 0 ? firstJobIdBestMatch : firstJobIdMostRecent;
+  const isFirstRun =
+    tabIndex === 0 ? isFirstRunBestMatch : isFirstRunMostRecent;
 
-    const job = {
-      id: jobId,
-      title: titleElement.textContent.trim(),
-    };
-
-    // Posted time
-    const postedElement = section.querySelector('[data-test="posted-on"]');
-    if (postedElement) {
-      job.posted = postedElement.textContent.trim();
-    }
-
-    // Job type
-    const jobTypeElement = section.querySelector('[data-test="job-type"]');
-    if (jobTypeElement) {
-      job.jobType = jobTypeElement.textContent.trim();
-    }
-
-    // Contractor tier
-    const contractorTierElement = section.querySelector(
-      '[data-test="contractor-tier"]'
-    );
-    if (contractorTierElement) {
-      job.contractorTier = contractorTierElement.textContent.trim();
-    }
-
-    // Duration
-    const durationElement = section.querySelector('[data-test="duration"]');
-    if (durationElement) {
-      job.duration = durationElement.textContent.trim();
-    }
-
-    // Budget
-    const budgetElement = section.querySelector('[data-test="budget"]');
-    if (budgetElement) {
-      job.budget = budgetElement.textContent.trim();
-    }
-
-    // Job description
-    const descriptionElement = section.querySelector(
-      '[data-test="job-description-text"]'
-    );
-    if (descriptionElement) {
-      job.description = descriptionElement.textContent.trim();
-    }
-
-    // Skills
-    const tokenContainer = section.querySelector(
-      '[data-test="token-container"]'
-    );
-    if (tokenContainer) {
-      const skillsUl = tokenContainer.querySelector("ul");
-      if (skillsUl) {
-        const skillLinks = skillsUl.querySelectorAll(
-          'a[href*="/nx/search/jobs/?ontology_skill_uid"]'
-        );
-        job.skills = Array.from(skillLinks).map((link) =>
-          link.textContent.trim()
-        );
-      }
-    }
-
-    // Payment verification status
-    const paymentVerificationElement = section.querySelector(
-      '[data-test="payment-verification-status"]'
-    );
-    if (paymentVerificationElement) {
-      job.paymentVerification = paymentVerificationElement.textContent.trim();
-    }
-
-    // Feedback
-    const feedbackElement = section.querySelector('[data-test="js-feedback"]');
-    if (feedbackElement) {
-      const srOnlyElement = feedbackElement.querySelector(".sr-only");
-      if (srOnlyElement) {
-        job.feedback = srOnlyElement.textContent.trim();
-      }
-    }
-
-    // Client spendings
-    const clientSpendingsElement = section.querySelector(
-      '[data-test="client-spendings"]'
-    );
-    if (clientSpendingsElement) {
-      job.clientSpendings = clientSpendingsElement.textContent.trim();
-    }
-
-    // Client country
-    const clientCountryElement = section.querySelector(
-      '[data-test="client-country"]'
-    );
-    if (clientCountryElement) {
-      job.clientCountry = clientCountryElement.textContent.trim();
-    }
-
-    // Proposals
-    const proposalsElement = section.querySelector('[data-test="proposals"]');
-    if (proposalsElement) {
-      job.proposals = proposalsElement.textContent.trim();
-    }
-
-    log(`Parsed job: "${job.id}"`);
-    return job;
-  } catch (error) {
-    log(`Error parsing job, id:"${job.id}", error:${error.message}`);
-    return null;
+  if (currentJobs.length === 0) {
+    return [];
   }
+
+  // If first run, just save the first job ID and return empty array
+  if (isFirstRun) {
+    log(`First run for ${tabName} - saving first job ID as baseline`);
+    if (tabIndex === 0) {
+      firstJobIdBestMatch = currentJobs[0].id;
+      isFirstRunBestMatch = false;
+    } else {
+      firstJobIdMostRecent = currentJobs[0].id;
+      isFirstRunMostRecent = false;
+    }
+    return []; // No new jobs on first run
+  }
+
+  // Find where our previously saved first job is in the current list
+  const savedJobIndex = currentJobs.findIndex(
+    (job) => job.id === savedFirstJobId
+  );
+
+  if (savedJobIndex === -1) {
+    // Our saved first job is not in the list anymore (page changed a lot)
+    // Consider all jobs as potentially new, but save new first job
+    log(`Previous first job not found in ${tabName}, treating all as new`);
+    const newJobs = currentJobs.slice(); // All jobs are new
+
+    // Update saved first job
+    if (tabIndex === 0) {
+      firstJobIdBestMatch = currentJobs[0].id;
+    } else {
+      firstJobIdMostRecent = currentJobs[0].id;
+    }
+
+    return newJobs;
+  }
+
+  if (savedJobIndex === 0) {
+    // No new jobs - the same job is still first
+    log(`No new jobs found in ${tabName}`);
+    return [];
+  }
+
+  // New jobs are everything BEFORE our saved first job (index 0 to savedJobIndex-1)
+  const newJobs = currentJobs.slice(0, savedJobIndex);
+
+  // Update saved first job to the new first job
+  if (tabIndex === 0) {
+    firstJobIdBestMatch = currentJobs[0].id;
+  } else {
+    firstJobIdMostRecent = currentJobs[0].id;
+  }
+
+  log(`Found ${newJobs.length} new jobs in ${tabName}`);
+  return newJobs;
 }
 
-window.checkForJobs = function checkForJobs(tabIndex) {
+window.findJobs = function (tabIndex) {
   const tabName = tabIndex === 0 ? "Best Match" : "Most Recent";
   const feedSelector =
     tabIndex === 0
@@ -144,13 +94,23 @@ window.checkForJobs = function checkForJobs(tabIndex) {
         if (jobSections.length > 0) {
           log(`Found ${jobSections.length} jobs in ${tabName} tab`);
 
-          // Parse the first job
-          const firstJob = parseJobSection(jobSections[0]);
+          // Parse ALL jobs
+          const allJobs = [];
+          for (let i = 0; i < jobSections.length; i++) {
+            const job = parseJobSection(jobSections[i]);
+            if (job) {
+              allJobs.push(job);
+            }
+          }
 
-          if (firstJob) {
-            log(`First job parsed successfully:`, firstJob);
-          } else {
-            log("Failed to parse first job");
+          log(`Successfully parsed ${allJobs.length} jobs from ${tabName}`);
+
+          // Check for new jobs
+          const newJobs = checkForNewJobs(tabIndex, allJobs);
+
+          if (newJobs.length > 0) {
+            log(`🔥 NEW JOBS DETECTED in ${tabName}:`, newJobs);
+            sendJobsToTelegram(tabIndex, newJobs);
           }
 
           return;

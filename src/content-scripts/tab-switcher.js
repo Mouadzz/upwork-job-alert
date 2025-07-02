@@ -1,9 +1,11 @@
+console.log("tab-switcher.js loaded");
+
 window.TabSwitcher = class TabSwitcher {
   constructor() {
     this.intervalId = null;
     this.timeoutId = null;
     this.currentTab = 0;
-    this.SWITCH_INTERVAL = 10000;
+    this.SWITCH_INTERVAL = 15000;
   }
 
   start() {
@@ -72,7 +74,7 @@ window.TabSwitcher = class TabSwitcher {
         const clickedTab = this.currentTab;
 
         this.timeoutId = setTimeout(() => {
-          checkForJobs(clickedTab);
+          findJobs(clickedTab);
           this.timeoutId = null;
         }, 1000);
       } else {

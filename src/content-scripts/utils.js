@@ -1,3 +1,5 @@
+console.log("utils.js loaded");
+
 window.log = function (message, data) {
   if (data && typeof data === "object") {
     console.log(`[UPWORK-TRACKER] ${message}`);

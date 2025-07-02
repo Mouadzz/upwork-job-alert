@@ -1,4 +1,4 @@
-console.log("Background loaded");
+console.log("background.js loaded");
 
 let monitoringTabId = null;
 
@@ -28,26 +28,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         monitoringTabId = tabs[0].id;
         console.log("Background: Monitoring tab set to", monitoringTabId);
 
-        chrome.tabs.sendMessage(tabs[0].id, { type: "START" }, (response) => {
-          if (chrome.runtime.lastError) {
-            // main script not loaded, inject it
-            chrome.scripting.executeScript(
-              {
-                target: { tabId: tabs[0].id },
-                files: [
-                  "content-scripts/utils.js",
-                  "content-scripts/job-checker.js",
-                  "content-scripts/tab-switcher.js",
-                  "content-scripts/main.js",
-                ],
-              },
-              () => {
-                // Try sending message again after injection
-                chrome.tabs.sendMessage(tabs[0].id, { type: "START" });
-              }
-            );
-          }
-        });
+        chrome.tabs.sendMessage(tabs[0].id, { type: "START" });
 
         chrome.storage.local.set({ isRunning: true });
         updateIcon(true);
