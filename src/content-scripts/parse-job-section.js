@@ -1,5 +1,3 @@
-console.log("parse-job-section.js loaded");
-
 window.parseJobSection = function (section) {
   try {
     const titleElement = section.querySelector(".job-tile-title a[href]");

@@ -1,5 +1,3 @@
-console.log("telegram-sender.js loaded");
-
 const BOT_TOKEN = import.meta.env.VITE_BOT_TOKEN;
 const CHAT_ID = import.meta.env.VITE_CHAT_ID;
 

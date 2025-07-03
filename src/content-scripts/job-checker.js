@@ -1,5 +1,3 @@
-console.log("job-checker.js loaded");
-
 let firstJobIdBestMatch = null;
 let firstJobIdMostRecent = null;
 let isFirstRunBestMatch = true;
@@ -13,12 +11,13 @@ function checkForNewJobs(tabIndex, currentJobs) {
     tabIndex === 0 ? isFirstRunBestMatch : isFirstRunMostRecent;
 
   if (currentJobs.length === 0) {
+    log(`No jobs found in ${tabName}`);
     return [];
   }
 
   // If first run, just save the first job ID and return empty array
   if (isFirstRun) {
-    log(`First run for ${tabName} - saving first job ID as baseline`);
+    log(`First run for ${tabName} - baseline set`);
     if (tabIndex === 0) {
       firstJobIdBestMatch = currentJobs[0].id;
       isFirstRunBestMatch = false;
@@ -35,10 +34,10 @@ function checkForNewJobs(tabIndex, currentJobs) {
   );
 
   if (savedJobIndex === -1) {
-    // Our saved first job is not in the list anymore (page changed a lot)
-    // Consider all jobs as potentially new, but save new first job
-    log(`Previous first job not found in ${tabName}, treating all as new`);
-    const newJobs = currentJobs.slice(); // All jobs are new
+    // Our saved first job is not in the list anymore
+    // Be conservative - only take the first job as new to avoid sending old ones
+    log(`Previous baseline not found in ${tabName} - conservative approach`);
+    const newJobs = [currentJobs[0]]; // Only first job as new
 
     // Update saved first job
     if (tabIndex === 0) {
@@ -51,13 +50,13 @@ function checkForNewJobs(tabIndex, currentJobs) {
   }
 
   if (savedJobIndex === 0) {
-    // No new jobs - the same job is still first
-    log(`No new jobs found in ${tabName}`);
+    log("No new jobs - the same job is still first");
     return [];
   }
 
-  // New jobs are everything BEFORE our saved first job (index 0 to savedJobIndex-1)
+  // New jobs are everything BEFORE our saved first job
   const newJobs = currentJobs.slice(0, savedJobIndex);
+  log(`Found ${newJobs.length} new jobs in ${tabName}`);
 
   // Update saved first job to the new first job
   if (tabIndex === 0) {
@@ -66,7 +65,6 @@ function checkForNewJobs(tabIndex, currentJobs) {
     firstJobIdMostRecent = currentJobs[0].id;
   }
 
-  log(`Found ${newJobs.length} new jobs in ${tabName}`);
   return newJobs;
 }
 
@@ -92,8 +90,6 @@ window.findJobs = function (tabIndex) {
         const jobSections = jobTileList.querySelectorAll("section");
 
         if (jobSections.length > 0) {
-          log(`Found ${jobSections.length} jobs in ${tabName} tab`);
-
           // Parse ALL jobs
           const allJobs = [];
           for (let i = 0; i < jobSections.length; i++) {
@@ -103,13 +99,13 @@ window.findJobs = function (tabIndex) {
             }
           }
 
-          log(`Successfully parsed ${allJobs.length} jobs from ${tabName}`);
+          log(`Found ${jobSections.length} jobs in ${tabName} tab`);
 
           // Check for new jobs
           const newJobs = checkForNewJobs(tabIndex, allJobs);
 
           if (newJobs.length > 0) {
-            log(`🔥 NEW JOBS DETECTED in ${tabName}:`, newJobs);
+            log(`🚀 Sending ${newJobs.length} new jobs to Telegram`);
             sendJobsToTelegram(tabIndex, newJobs);
           }
 
