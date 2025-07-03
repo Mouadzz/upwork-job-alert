@@ -105,8 +105,15 @@ window.findJobs = function (tabIndex) {
           const newJobs = checkForNewJobs(tabIndex, allJobs);
 
           if (newJobs.length > 0) {
-            log(`🚀 Sending ${newJobs.length} new jobs to Telegram`);
-            sendJobsToTelegram(tabIndex, newJobs);
+            // Apply filters here
+            const filteredJobs = window.filterJobs(newJobs);
+
+            if (filteredJobs.length > 0) {
+              log(`🚀 Sending ${filteredJobs.length} new jobs to Telegram`);
+              sendJobsToTelegram(tabIndex, filteredJobs);
+            } else {
+              log(`No jobs passed the filters`);
+            }
           }
 
           return;

@@ -1,10 +1,16 @@
 window.TabSwitcher = class TabSwitcher {
-  constructor() {
+  constructor(config = {}) {
     this.intervalId = null;
     this.timeoutId = null;
     this.currentTab = 0;
-    this.SWITCH_INTERVAL = 10000;
-    this.WAIT_AFTER_SWITCH = 5000;
+    // Set configuration from constructor or use defaults
+    this.SWITCH_INTERVAL = config.SWITCH_INTERVAL || 10000;
+    this.WAIT_AFTER_SWITCH = config.WAIT_AFTER_SWITCH || 5000;
+
+    log(`Tab switcher initialized with config:`, {
+      SWITCH_INTERVAL: this.SWITCH_INTERVAL,
+      WAIT_AFTER_SWITCH: this.WAIT_AFTER_SWITCH,
+    });
   }
 
   start() {

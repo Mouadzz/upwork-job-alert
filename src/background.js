@@ -22,7 +22,7 @@ function updateIcon(isRunning) {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "START") {
-    console.log("Background: Started");
+    console.log("Background: Started with config", message.config);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0] && tabs[0].url.includes("upwork.com")) {
         monitoringTabId = tabs[0].id;
@@ -30,7 +30,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         chrome.storage.local.set({ monitoringTabId: monitoringTabId });
 
-        chrome.tabs.sendMessage(tabs[0].id, { type: "START" });
+        // Pass the config to the content script
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: "START",
+          config: message.config,
+        });
 
         chrome.storage.local.set({ isRunning: true });
         updateIcon(true);

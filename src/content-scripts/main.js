@@ -7,15 +7,24 @@ if (window.upworkTrackerLoaded) {
 
   log("Main script loaded at: " + new Date().toLocaleTimeString());
 
-  const tabSwitcher = new TabSwitcher();
+  let tabSwitcher = null;
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     log(`Received message: ${message.type}`);
 
     if (message.type === "START") {
+      // Initialize job filter config if provided
+      if (message.config && window.initJobFilterConfig) {
+        window.initJobFilterConfig(message.config);
+      }
+
+      // Create tab switcher with config
+      tabSwitcher = new TabSwitcher(message.config || {});
       tabSwitcher.start();
     } else if (message.type === "STOP") {
-      tabSwitcher.stop();
+      if (tabSwitcher) {
+        tabSwitcher.stop();
+      }
     }
 
     sendResponse({ ok: true });
@@ -24,7 +33,9 @@ if (window.upworkTrackerLoaded) {
   // Cleanup on page unload
   window.addEventListener("beforeunload", () => {
     log("Page unloading, cleaning up...");
-    tabSwitcher.stop();
+    if (tabSwitcher) {
+      tabSwitcher.stop();
+    }
   });
 
   log("Main script setup complete");

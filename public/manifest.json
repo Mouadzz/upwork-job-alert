@@ -16,7 +16,8 @@
       "matches": ["*://*.upwork.com/*"],
       "js": [
         "content-scripts/utils.js",
-        "content-scripts/parse-job-section.js",
+        "content-scripts/job-filters.js",
+        "content-scripts/job-parser.js",
         "content-scripts/telegram-sender.js",
         "content-scripts/job-checker.js",
         "content-scripts/tab-switcher.js",

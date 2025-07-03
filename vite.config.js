@@ -17,9 +17,13 @@ export default defineConfig({
           __dirname,
           "src/content-scripts/utils.js"
         ),
-        "content-scripts/parse-job-section": path.resolve(
+        "content-scripts/job-filters": path.resolve(
           __dirname,
-          "src/content-scripts/parse-job-section.js"
+          "src/content-scripts/job-filters.js"
+        ),
+        "content-scripts/job-parser": path.resolve(
+          __dirname,
+          "src/content-scripts/job-parser.js"
         ),
         "content-scripts/telegram-sender": path.resolve(
           __dirname,
