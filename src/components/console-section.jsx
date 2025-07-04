@@ -36,11 +36,11 @@ function ConsoleSection({ logs, onClearLogs }) {
               className="mb-1 border-b border-gray-800 pb-1 last:border-b-0"
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-gray-400 text-[10px]">
+                <span className="text-gray-400 text-[8px]">
                   {log.timestamp}
                 </span>
               </div>
-              <div className="text-gray-100 text-[11px] break-words">
+              <div className="text-gray-100 text-[10px] break-words">
                 {log.message}
               </div>
               {log.data && (

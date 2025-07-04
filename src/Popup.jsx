@@ -111,26 +111,21 @@ function Popup() {
 
   const getButtonClasses = () => {
     if (!isRunning && !onUpworkPage) {
-      return "w-full bg-gray-600 text-gray-400 py-2 rounded-md font-medium text-base cursor-not-allowed";
+      return "w-full bg-gray-600 text-gray-400 py-2 rounded-md font-medium text-sm cursor-not-allowed";
     }
 
     if (isRunning) {
-      return "w-full bg-gray-300 text-white py-2 rounded-md font-medium text-base shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1 hover:bg-gray-900 cursor-pointer";
+      return "w-full bg-gray-800 text-white py-2 rounded-md font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer";
     }
 
-    return "w-full bg-white text-black py-2 rounded-md font-medium text-base shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1 hover:bg-gray-200 cursor-pointer";
+    return "w-full bg-white text-black py-2 rounded-md font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer";
   };
 
   return (
-    <div className="w-[500px] h-[600px] p-0 m-0 flex flex-col">
-      <div className="bg-gray-900 p-3 text-white flex-shrink-0">
-        <h1 className="text-lg font-bold text-white text-center">
-          Upwork Tracker
-        </h1>
-      </div>
-      <ConfigSection config={config} onConfigChange={handleConfigChange} />
-      <div className="bg-gray-900 p-3 text-white flex-shrink-0 flex justify-center">
-        <div className="w-2/3">
+    <div className="w-[400px] h-[600px] p-0 m-0 flex flex-col">
+      <div className="bg-gray-900 p-2 text-white flex-shrink-0 flex justify-between items-center">
+        <h1 className="text-lg font-bold text-white">Upwork Tracker</h1>
+        <div className="w-32">
           <button
             onClick={handleToggle}
             disabled={!isRunning && !onUpworkPage}
@@ -140,6 +135,7 @@ function Popup() {
           </button>
         </div>
       </div>
+      <ConfigSection config={config} onConfigChange={handleConfigChange} />
       <ConsoleSection logs={logs} onClearLogs={clearLogs} />
     </div>
   );

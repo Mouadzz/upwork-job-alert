@@ -83,7 +83,7 @@ function ConfigSection({ config, onConfigChange }) {
       <div className="grid grid-cols-2 gap-3 items-end">
         <div>
           <label className="block text-xs font-medium text-gray-300 mb-1">
-            Excluded Countries (comma-separated)
+            Excluded Countries
           </label>
           <input
             type="text"
@@ -107,7 +107,7 @@ function ConfigSection({ config, onConfigChange }) {
             htmlFor="payment-verification"
             className="text-xs font-medium text-gray-300"
           >
-            Require Payment Verification
+            Payment verified ?
           </label>
         </div>
       </div>
