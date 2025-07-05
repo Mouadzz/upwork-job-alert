@@ -1,18 +1,29 @@
 # Upwork Job Alert Extension
 
-A Chrome extension that monitors new jobs on Upwork using their GraphQL API and sends notifications via Chrome notifications and Telegram bot.
+A Chrome extension that monitors new jobs on Upwork using their GraphQL API and sends notifications via Chrome notifications and Telegram bot. Now includes a built-in cover letter manager for quick job applications.
 
 ## Features
 
 - 🔍 Real-time job monitoring using Upwork's GraphQL API
 - 📱 Chrome notifications with sound alerts
 - 💬 Telegram notifications support
+- 📝 **Quick Cover Letter Manager** - Store and instantly copy cover letters for fast job applications
 - 🎯 Advanced filtering options:
   - Payment verification requirement
   - Minimum client spending
   - Excluded countries
   - Maximum job age (in minutes)
 - 🔗 Click notifications to open job directly on Upwork
+
+## Screenshots
+
+### Extension Popup - Configuration
+
+![Extension Configuration](screenshots/extension-config.png)
+
+### Cover Letter Manager
+
+![Cover Letter Tab](screenshots/cover-letter-tab.png)
 
 ## Setup
 
@@ -55,10 +66,31 @@ npm run build
 # 4. Select the `dist` folder
 ```
 
-### Running the Extension
+## Usage
+
+### Job Monitoring
 
 1. Click "Start Monitoring" to begin job monitoring
 2. The extension will automatically fetch new jobs based on your configured interval
 3. When new jobs match your filters, you'll receive notifications
 4. Click on Chrome notifications to open the job directly on Upwork
 5. Click "Stop Monitoring" to pause the extension
+
+### Quick Cover Letter Manager
+
+1. **Navigate to Cover Letters Tab** - Click on the "Cover Letters" tab in the extension popup
+2. **Create Cover Letter Templates** - Click "Add Cover Letter" to store your go-to cover letters
+3. **Instant Copy** - Click the copy button (📋) to instantly copy any cover letter to your clipboard
+4. **Fast Application** - Switch to Upwork and paste (Ctrl+V) directly into the proposal field
+5. **Manage Templates** - Edit or delete templates as needed
+
+
+## Configuration Options
+
+- **Fetch Interval**: How often to check for new jobs (seconds)
+- **Payment Verified**: Only show jobs from payment-verified clients
+- **Min Client Spending**: Minimum amount client must have spent on Upwork
+- **Excluded Countries**: Countries to exclude from job results
+- **Max Job Age**: Only show jobs posted within specified minutes
+- **Telegram Notifications**: Enable/disable Telegram notifications
+- **Sound Notifications**: Enable/disable notification sounds
