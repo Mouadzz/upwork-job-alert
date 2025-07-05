@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
-import { Play, Square, Bell, Send, CircleX } from "lucide-react";
+import { Settings, FileText } from "lucide-react";
+import Header from "./components/Header";
+import TabNavigation from "./components/TabNavigation";
+import ConfigurationTab from "./components/ConfigurationTab";
+import CoverLetterTab from "./components/CoverLetterTab";
+import ControlButton from "./components/ControlButton";
+import ErrorDisplay from "./components/ErrorDisplay";
 
 const Popup = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("configuration");
   const [config, setConfig] = useState({
     requirePaymentVerification: false,
     minClientSpending: 0,
@@ -168,175 +175,56 @@ const Popup = () => {
     }));
   };
 
-  // Secure number input handler
-  const handleNumberInput = (key, value, min = 0) => {
-    // Remove any non-numeric characters
-    const cleanValue = value.replace(/[^0-9]/g, "");
-
-    // If empty, don't change anything (let user type)
-    if (cleanValue === "") {
-      handleConfigChange(key, "");
-      return;
-    }
-
-    const numValue = parseInt(cleanValue);
-
-    // For fetch interval, enforce minimum of 20 but allow typing
-    if (key === "fetchInterval") {
-      // Allow any number to be typed, but validate on start
-      handleConfigChange(key, numValue);
-    } else if (numValue < min) {
-      handleConfigChange(key, min);
-    } else {
-      handleConfigChange(key, numValue);
-    }
+  const handleCloseError = () => {
+    setError(null);
   };
 
+  const tabs = [
+    {
+      id: "configuration",
+      label: "Configuration",
+      icon: Settings,
+    },
+    {
+      id: "coverLetter",
+      label: "Cover Letter",
+      icon: FileText,
+    },
+  ];
+
   return (
-    <div className="w-80 bg-gray-900 text-white p-6 font-sans">
+    <div className="w-[420px] h-[600px] bg-gray-900 text-white font-sans flex flex-col relative">
+      {/* Toast Notification */}
+      <ErrorDisplay error={error} onClose={handleCloseError} />
+
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-xl font-bold text-blue-400 mb-2">
-          Upwork Job Alert
-        </h1>
-        <p className="text-xs text-gray-400 leading-relaxed">
-          Alternates between Best Match and Most Recent feeds every interval
-        </p>
-      </div>
+      <Header />
 
-      {/* Error Display */}
-      {error && (
-        <div className="mb-4 p-2 bg-red-900 border border-red-700 rounded-lg flex items-start space-x-2">
-          <span className="text-xs text-red-100">{error}</span>
-        </div>
-      )}
+      {/* Tab Navigation */}
+      <TabNavigation
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-      {/* Configuration */}
-      <div className="space-y-4 mb-6">
-        {/* Payment Verification */}
-        <label className="flex items-center space-x-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={config.requirePaymentVerification}
-            onChange={(e) =>
-              handleConfigChange("requirePaymentVerification", e.target.checked)
-            }
-            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {activeTab === "configuration" && (
+          <ConfigurationTab
+            config={config}
+            onConfigChange={handleConfigChange}
           />
-          <span className="text-xs">Require Payment Verification</span>
-        </label>
-
-        {/* Min Client Spending */}
-        <div>
-          <label className="block text-xs text-gray-300 mb-1">
-            Min Client Spending ($)
-          </label>
-          <input
-            type="text"
-            value={config.minClientSpending}
-            onChange={(e) =>
-              handleNumberInput("minClientSpending", e.target.value, 0)
-            }
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            placeholder="0"
-          />
-        </div>
-
-        {/* Excluded Countries */}
-        <div>
-          <label className="block text-xs text-gray-300 mb-1">
-            Excluded Countries
-          </label>
-          <input
-            type="text"
-            value={config.excludedCountries}
-            onChange={(e) =>
-              handleConfigChange("excludedCountries", e.target.value)
-            }
-            placeholder="e.g., India, Pakistan, Bangladesh"
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        {/* Fetch Interval */}
-        <div>
-          <label className="block text-xs text-gray-300 mb-1">
-            Fetch Interval (seconds) - Min: 20
-          </label>
-          <input
-            type="text"
-            value={config.fetchInterval}
-            onChange={(e) =>
-              handleNumberInput("fetchInterval", e.target.value, 20)
-            }
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            placeholder="20"
-          />
-        </div>
-
-        {/* Max Job Age */}
-        <div>
-          <label className="block text-xs text-gray-300 mb-1">
-            Jobs Posted Within (minutes) - 0 = All
-          </label>
-          <input
-            type="text"
-            value={config.maxJobAge}
-            onChange={(e) => handleNumberInput("maxJobAge", e.target.value, 0)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            placeholder="5"
-          />
-        </div>
-
-        {/* Notification Options */}
-        <div className="space-y-3">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={config.chromeNotifications}
-              onChange={(e) =>
-                handleConfigChange("chromeNotifications", e.target.checked)
-              }
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-            />
-            <Bell className="w-4 h-4 text-gray-400" />
-            <span className="text-xs">Chrome Notifications</span>
-          </label>
-
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={config.telegramNotifications}
-              onChange={(e) =>
-                handleConfigChange("telegramNotifications", e.target.checked)
-              }
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-            />
-            <Send className="w-4 h-4 text-gray-400" />
-            <span className="text-xs">Telegram Notifications</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Control Button */}
-      <div className="space-y-3">
-        {!isRunning ? (
-          <button
-            onClick={handleStart}
-            className="text-sm cursor-pointer w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white transition-all duration-200"
-          >
-            <Play className="w-5 h-5" />
-            <span>Start Monitoring</span>
-          </button>
-        ) : (
-          <button
-            onClick={handleStop}
-            className="text-sm cursor-pointer w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
-          >
-            <Square className="w-5 h-5" />
-            <span>Stop Monitoring</span>
-          </button>
         )}
+        {activeTab === "coverLetter" && <CoverLetterTab />}
+      </div>
+
+      {/* Control Button - reduced padding */}
+      <div className="p-4 border-t border-gray-800">
+        <ControlButton
+          isRunning={isRunning}
+          onStart={handleStart}
+          onStop={handleStop}
+        />
       </div>
     </div>
   );
