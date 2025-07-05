@@ -6,6 +6,25 @@ export class NotificationManager {
     this.CHAT_ID = import.meta.env.VITE_CHAT_ID;
   }
 
+  async sendAuthErrorNotification() {
+    try {
+      await this.ensureOffscreenDocument();
+
+      await chrome.notifications.create({
+        type: "basic",
+        iconUrl: "icons/icon-auth-error.png",
+        title: "Upwork Job Alert - Authentication Error",
+        message:
+          "You are not logged in. Please login to continue monitoring jobs.",
+        priority: 2,
+      });
+
+      chrome.runtime.sendMessage({ type: "PLAY_SOUND" });
+    } catch (error) {
+      console.error("Error sending auth error notification:", error);
+    }
+  }
+
   async sendJobNotifications(jobs, endpointName, config) {
     try {
       // Send Chrome notifications if enabled
@@ -80,23 +99,6 @@ export class NotificationManager {
     return `${Math.floor(diff / 86400)}d ago`;
   }
 
-  async playNotificationSound() {
-    // Create offscreen document if it doesn't exist
-    const contexts = await chrome.runtime.getContexts({
-      contextTypes: ["OFFSCREEN_DOCUMENT"],
-    });
-
-    if (contexts.length === 0) {
-      await chrome.offscreen.createDocument({
-        url: "offscreen.html",
-        reasons: ["AUDIO_PLAYBACK"],
-        justification: "Play notification sound",
-      });
-    }
-
-    // Tell offscreen to play sound
-    chrome.runtime.sendMessage({ type: "PLAY_SOUND" });
-  }
   async sendTelegramNotifications(jobs, endpointName) {
     if (!this.BOT_TOKEN || !this.CHAT_ID) {
       console.error("Telegram bot token or chat ID not configured");

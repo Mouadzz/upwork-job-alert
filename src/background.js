@@ -30,26 +30,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     iconManager.setStopped();
 
     sendResponse({ success: true });
-  } else if (message.action === "checkStatus") {
-    const lastError = jobMonitor.getLastError();
-    const isRunning = jobMonitor.isRunning();
-
-    // Update icon based on status
-    if (
-      lastError &&
-      (lastError.includes("Authentication") || lastError.includes("Token"))
-    ) {
-      iconManager.setAuthError();
-    } else if (isRunning) {
-      iconManager.setRunning();
-    } else {
-      iconManager.setStopped();
-    }
-
+  } else if (message.action === "isRunning") {
     sendResponse({
       success: true,
-      isRunning: isRunning,
-      error: lastError,
+      isRunning: jobMonitor.isRunning(),
     });
   } else {
     sendResponse({ success: false });
@@ -69,6 +53,7 @@ chrome.notifications.onClicked.addListener((notificationId) => {
   // Clear the notification
   chrome.notifications.clear(notificationId);
 });
+
 
 // Initialize with stopped icon
 iconManager.setStopped();

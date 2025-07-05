@@ -17,16 +17,30 @@ const Popup = () => {
   // Check if monitoring is running on component mount
   useEffect(() => {
     checkRunningStatus();
+
+    // Listen for status changes from background
+    const messageListener = (message, sender, sendResponse) => {
+      if (message.action === "statusChanged") {
+        setIsRunning(message.isRunning);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(messageListener);
+
+    // Cleanup listener on unmount
+    return () => {
+      chrome.runtime.onMessage.removeListener(messageListener);
+    };
   }, []);
 
   const checkRunningStatus = async () => {
     try {
       const response = await chrome.runtime.sendMessage({
-        action: "checkStatus",
+        action: "isRunning",
       });
+
       if (response.success) {
         setIsRunning(response.isRunning);
-        setError(response.error);
       }
     } catch (error) {
       console.error("Error checking status:", error);
@@ -36,19 +50,27 @@ const Popup = () => {
   const getTokenInfo = async () => {
     try {
       const cookies = await chrome.cookies.getAll({ domain: ".upwork.com" });
-      const authCookie = cookies.find(
+      const authCookies = cookies.filter(
         (cookie) =>
           cookie.path === "/nx/find-work/" &&
           cookie.value.startsWith("oauth2v2_")
       );
 
-      if (authCookie) {
-        return {
-          token: authCookie.value,
-          expiry: new Date(authCookie.expirationDate * 1000).toISOString(),
-        };
+      if (authCookies.length === 0) {
+        return null;
       }
-      return null;
+
+      // Get the cookie with the latest expiration date (newest token)
+      const latestAuthCookie = authCookies.reduce((latest, current) => {
+        return current.expirationDate > latest.expirationDate
+          ? current
+          : latest;
+      });
+
+      return {
+        token: latestAuthCookie.value,
+        expiry: new Date(latestAuthCookie.expirationDate * 1000).toISOString(),
+      };
     } catch (error) {
       console.error("Error getting token:", error);
       return null;
@@ -58,7 +80,7 @@ const Popup = () => {
   const handleStart = async () => {
     setError(null);
 
-    // Get token and expiry
+    // Get fresh token
     const tokenInfo = await getTokenInfo();
 
     if (!tokenInfo) {

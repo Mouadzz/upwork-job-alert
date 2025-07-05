@@ -1,6 +1,7 @@
 import { ApiClient } from "./api-client.js";
 import { filterJobs } from "./job-filter.js";
 import { NotificationManager } from "./notification-manager.js";
+import { IconManager } from "./icon-manager.js";
 
 export class JobMonitor {
   constructor() {
@@ -22,6 +23,7 @@ export class JobMonitor {
     // Initialize dependencies
     this.apiClient = new ApiClient();
     this.notificationManager = new NotificationManager();
+    this.iconManager = new IconManager();
   }
 
   async start(config, bearerToken, tokenExpiry) {
@@ -31,7 +33,6 @@ export class JobMonitor {
     this.bearerToken = bearerToken;
     this.tokenExpiry = tokenExpiry;
     this.running = true;
-    this.lastError = null;
 
     // Clean storage for fresh start
     await this.cleanStorage();
@@ -60,10 +61,6 @@ export class JobMonitor {
     return this.running;
   }
 
-  getLastError() {
-    return this.lastError;
-  }
-
   isTokenExpired() {
     if (!this.tokenExpiry) return false;
     return new Date() >= new Date(this.tokenExpiry);
@@ -81,14 +78,34 @@ export class JobMonitor {
     }, this.config.fetchInterval * 1000);
   }
 
+  async handleAuthError() {
+    console.log("Authentication error detected");
+    console.log("⏹️ Stopping Upwork job monitoring...");
+
+    this.iconManager.setAuthError();
+
+    await this.notificationManager.sendAuthErrorNotification();
+
+    this.stop();
+
+    // Notify popup about status change
+    try {
+      await chrome.runtime.sendMessage({
+        action: "statusChanged",
+        isRunning: false,
+      });
+    } catch (error) {
+      console.log("Popup not available to notify");
+    }
+  }
+
   async fetchAndProcessJobs() {
     if (!this.running) return;
 
     try {
       // Check token expiration
       if (this.isTokenExpired()) {
-        this.lastError = "Token expired. Please login again.";
-        this.stop();
+        await this.handleAuthError();
         return;
       }
 
@@ -101,13 +118,11 @@ export class JobMonitor {
       );
 
       if (result.authError) {
-        this.lastError = "Authentication failed. Please login again.";
-        this.stop();
+        await this.handleAuthError();
         return;
       }
 
       if (!result.success) {
-        this.lastError = result.error;
         return;
       }
 
@@ -146,7 +161,7 @@ export class JobMonitor {
       this.currentEndpoint =
         this.currentEndpoint === "bestMatch" ? "recentWork" : "bestMatch";
     } catch (error) {
-      this.lastError = error.message;
+      console.error("Error fetchAndProcessJobs:", error);
     }
   }
 
