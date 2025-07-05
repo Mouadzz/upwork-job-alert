@@ -139,8 +139,6 @@ export class JobMonitor {
         // Filter jobs based on user config
         const filteredJobs = filterJobs(newJobs, this.config);
 
-        console.log(`${filteredJobs.length} passed filters`);
-
         // Send notifications for filtered jobs
         if (filteredJobs.length > 0) {
           this.notificationManager.sendJobNotifications(
