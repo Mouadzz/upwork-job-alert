@@ -266,7 +266,7 @@ const Popup = () => {
         {!isRunning ? (
           <button
             onClick={handleStart}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white transition-all duration-200"
+            className="text-sm cursor-pointer w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-green-600 hover:bg-green-700 text-white transition-all duration-200"
           >
             <Play className="w-5 h-5" />
             <span>Start Monitoring</span>
@@ -274,7 +274,7 @@ const Popup = () => {
         ) : (
           <button
             onClick={handleStop}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
+            className="text-sm cursor-pointer w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white transition-all duration-200"
           >
             <Square className="w-5 h-5" />
             <span>Stop Monitoring</span>
