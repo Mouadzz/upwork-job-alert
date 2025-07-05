@@ -93,4 +93,4 @@ npm run build
 - **Excluded Countries**: Countries to exclude from job results
 - **Max Job Age**: Only show jobs posted within specified minutes
 - **Telegram Notifications**: Enable/disable Telegram notifications
-- **Sound Notifications**: Enable/disable notification sounds
+- **Chrome Notifications**: Enable/disable Chrome notifications 
