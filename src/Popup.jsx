@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, Square, Bell, Send, AlertCircle } from "lucide-react";
+import { Play, Square, Bell, Send, CircleX } from "lucide-react";
 
 const Popup = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -8,7 +8,7 @@ const Popup = () => {
     requirePaymentVerification: false,
     minClientSpending: 0,
     excludedCountries: "India, Pakistan, Bangladesh",
-    fetchInterval: 15,
+    fetchInterval: 20,
     chromeNotifications: true,
     telegramNotifications: true,
     maxJobAge: 5,
@@ -77,8 +77,41 @@ const Popup = () => {
     }
   };
 
+  const validateConfig = () => {
+    // Check fetch interval
+    if (
+      !config.fetchInterval ||
+      config.fetchInterval === "" ||
+      config.fetchInterval < 20
+    ) {
+      setError(
+        "Fetch interval must be at least 20 seconds to avoid spamming Upwork's servers. \nWe recommend 30 seconds or more for better reliability."
+      );
+      return false;
+    }
+
+    // Check max job age (0 is allowed - means no age filter)
+    if (config.maxJobAge < 0) {
+      setError("Job age filter cannot be negative.");
+      return false;
+    }
+
+    // Check min client spending
+    if (config.minClientSpending < 0) {
+      setError("Min client spending cannot be negative.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleStart = async () => {
     setError(null);
+
+    // Validate configuration first
+    if (!validateConfig()) {
+      return;
+    }
 
     // Get fresh token
     const tokenInfo = await getTokenInfo();
@@ -135,6 +168,30 @@ const Popup = () => {
     }));
   };
 
+  // Secure number input handler
+  const handleNumberInput = (key, value, min = 0) => {
+    // Remove any non-numeric characters
+    const cleanValue = value.replace(/[^0-9]/g, "");
+
+    // If empty, don't change anything (let user type)
+    if (cleanValue === "") {
+      handleConfigChange(key, "");
+      return;
+    }
+
+    const numValue = parseInt(cleanValue);
+
+    // For fetch interval, enforce minimum of 20 but allow typing
+    if (key === "fetchInterval") {
+      // Allow any number to be typed, but validate on start
+      handleConfigChange(key, numValue);
+    } else if (numValue < min) {
+      handleConfigChange(key, min);
+    } else {
+      handleConfigChange(key, numValue);
+    }
+  };
+
   return (
     <div className="w-80 bg-gray-900 text-white p-6 font-sans">
       {/* Header */}
@@ -142,13 +199,15 @@ const Popup = () => {
         <h1 className="text-xl font-bold text-blue-400 mb-2">
           Upwork Job Alert
         </h1>
+        <p className="text-xs text-gray-400 leading-relaxed">
+          Alternates between Best Match and Most Recent feeds every interval
+        </p>
       </div>
 
       {/* Error Display */}
       {error && (
-        <div className="mb-4 p-3 bg-red-900 border border-red-700 rounded-lg flex items-start space-x-2">
-          <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-          <span className="text-sm text-red-100">{error}</span>
+        <div className="mb-4 p-2 bg-red-900 border border-red-700 rounded-lg flex items-start space-x-2">
+          <span className="text-xs text-red-100">{error}</span>
         </div>
       )}
 
@@ -164,28 +223,28 @@ const Popup = () => {
             }
             className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
           />
-          <span className="text-sm">Require Payment Verification</span>
+          <span className="text-xs">Require Payment Verification</span>
         </label>
 
         {/* Min Client Spending */}
         <div>
-          <label className="block text-sm text-gray-300 mb-1">
+          <label className="block text-xs text-gray-300 mb-1">
             Min Client Spending ($)
           </label>
           <input
-            type="number"
+            type="text"
             value={config.minClientSpending}
             onChange={(e) =>
-              handleConfigChange("minClientSpending", parseInt(e.target.value))
+              handleNumberInput("minClientSpending", e.target.value, 0)
             }
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            min="0"
+            placeholder="0"
           />
         </div>
 
         {/* Excluded Countries */}
         <div>
-          <label className="block text-sm text-gray-300 mb-1">
+          <label className="block text-xs text-gray-300 mb-1">
             Excluded Countries
           </label>
           <input
@@ -201,33 +260,31 @@ const Popup = () => {
 
         {/* Fetch Interval */}
         <div>
-          <label className="block text-sm text-gray-300 mb-1">
-            Fetch Interval (seconds)
+          <label className="block text-xs text-gray-300 mb-1">
+            Fetch Interval (seconds) - Min: 20
           </label>
           <input
-            type="number"
+            type="text"
             value={config.fetchInterval}
             onChange={(e) =>
-              handleConfigChange("fetchInterval", parseInt(e.target.value))
+              handleNumberInput("fetchInterval", e.target.value, 20)
             }
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            min="10"
+            placeholder="20"
           />
         </div>
 
         {/* Max Job Age */}
         <div>
-          <label className="block text-sm text-gray-300 mb-1">
-            Max Job Age (minutes)
+          <label className="block text-xs text-gray-300 mb-1">
+            Jobs Posted Within (minutes) - 0 = All
           </label>
           <input
-            type="number"
+            type="text"
             value={config.maxJobAge}
-            onChange={(e) =>
-              handleConfigChange("maxJobAge", parseInt(e.target.value))
-            }
+            onChange={(e) => handleNumberInput("maxJobAge", e.target.value, 0)}
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm focus:outline-none focus:border-blue-500"
-            min="1"
+            placeholder="5"
           />
         </div>
 
@@ -243,7 +300,7 @@ const Popup = () => {
               className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
             />
             <Bell className="w-4 h-4 text-gray-400" />
-            <span className="text-sm">Chrome Notifications</span>
+            <span className="text-xs">Chrome Notifications</span>
           </label>
 
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -256,7 +313,7 @@ const Popup = () => {
               className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
             />
             <Send className="w-4 h-4 text-gray-400" />
-            <span className="text-sm">Telegram Notifications</span>
+            <span className="text-xs">Telegram Notifications</span>
           </label>
         </div>
       </div>
