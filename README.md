@@ -1,6 +1,19 @@
 # Upwork Jobs Notifier Extension
 
-A Chrome extension that monitors new jobs on Upwork and sends notifications via Telegram bot.
+A Chrome extension that monitors new jobs on Upwork using their GraphQL API and sends notifications via Chrome notifications and Telegram bot.
+
+## Features
+
+- 🔍 Real-time job monitoring using Upwork's GraphQL API
+- 📱 Chrome notifications with sound alerts
+- 💬 Telegram notifications support
+- 🎯 Advanced filtering options:
+  - Payment verification requirement
+  - Minimum client spending
+  - Excluded countries
+  - Maximum job age (in minutes)
+- 🔊 Customizable notification sounds
+- 🔗 Click notifications to open job directly on Upwork
 
 ## Setup
 
@@ -27,7 +40,7 @@ VITE_CHAT_ID=your_chat_id_here
    - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
    - Find your chat ID in the response
 
-## Usage
+### 3. Installation
 
 ```bash
 # Install dependencies
@@ -45,9 +58,8 @@ npm run build
 
 ### Running the Extension
 
-1. Make sure you are logged in to your Upwork account
-2. Navigate to https://www.upwork.com/nx/find-work/
-3. Click the extension icon
-4. Configure your job filtering preferences
-5. Click "Start" to begin monitoring
-6. Get notified via Telegram when new jobs appear
+1. Click "Start Monitoring" to begin job monitoring
+2. The extension will automatically fetch new jobs based on your configured interval
+3. When new jobs match your filters, you'll receive notifications
+4. Click on Chrome notifications to open the job directly on Upwork
+5. Click "Stop Monitoring" to pause the extension
