@@ -1,4 +1,4 @@
-# Upwork Jobs Notifier Extension
+# Upwork Job Alert Extension
 
 A Chrome extension that monitors new jobs on Upwork using their GraphQL API and sends notifications via Chrome notifications and Telegram bot.
 
