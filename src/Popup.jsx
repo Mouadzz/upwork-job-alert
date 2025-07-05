@@ -92,7 +92,7 @@ const Popup = () => {
       config.fetchInterval < 20
     ) {
       setError(
-        "Fetch interval must be at least 20 seconds to avoid spamming Upwork's servers. \nWe recommend 30 seconds or more for better reliability."
+        "Fetch interval must be at least 20 seconds to avoid spamming Upwork's servers. We recommend 30 seconds or more for better reliability."
       );
       return false;
     }
