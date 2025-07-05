@@ -1,4 +1,4 @@
-import Popup from "./popup.jsx";
+import Popup from "./Popup.jsx";
 
 function App() {
   return <Popup />;
