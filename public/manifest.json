@@ -1,28 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "Upwork Tracker",
-  "version": "1.0.0",
-  "description": "Monitor new jobs on Upwork and get notified",
-  "permissions": ["storage", "activeTab", "notifications", "scripting"],
+  "name": "Upwork Job Alert",
+  "version": "2.0.0",
+  "description": "Monitor new jobs on Upwork and get instant notifications",
+  "permissions": [
+    "cookies",
+    "notifications",
+    "activeTab",
+    "storage",
+    "offscreen"
+  ],
   "host_permissions": ["https://www.upwork.com/*", "https://upwork.com/*"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_title": "Upwork Job Alert",
+    "default_icon": "icons/icon-stopped.png"
   },
-  "content_scripts": [
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "web_accessible_resources": [
     {
-      "matches": ["*://*.upwork.com/*"],
-      "js": [
-        "content-scripts/utils.js",
-        "content-scripts/job-filters.js",
-        "content-scripts/job-parser.js",
-        "content-scripts/telegram-sender.js",
-        "content-scripts/job-checker.js",
-        "content-scripts/tab-switcher.js",
-        "content-scripts/main.js"
-      ]
+      "resources": ["sounds/*"],
+      "matches": ["<all_urls>"]
     }
   ]
 }

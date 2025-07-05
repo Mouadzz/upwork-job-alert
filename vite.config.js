@@ -13,33 +13,29 @@ export default defineConfig({
       input: {
         popup: path.resolve(__dirname, "index.html"),
         background: path.resolve(__dirname, "src/background.js"),
-        "content-scripts/utils": path.resolve(
+        "scripts/api-client": path.resolve(
           __dirname,
-          "src/content-scripts/utils.js"
+          "src/scripts/api-client.js"
         ),
-        "content-scripts/job-filters": path.resolve(
+        "scripts/icon-manager": path.resolve(
           __dirname,
-          "src/content-scripts/job-filters.js"
+          "src/scripts/icon-manager.js"
         ),
-        "content-scripts/job-parser": path.resolve(
+        "scripts/format-telegram-msg": path.resolve(
           __dirname,
-          "src/content-scripts/job-parser.js"
+          "src/scripts/format-telegram-msg.js"
         ),
-        "content-scripts/telegram-sender": path.resolve(
+        "scripts/job-monitor": path.resolve(
           __dirname,
-          "src/content-scripts/telegram-sender.js"
+          "src/scripts/job-monitor.js"
         ),
-        "content-scripts/job-checker": path.resolve(
+        "scripts/job-filter": path.resolve(
           __dirname,
-          "src/content-scripts/job-checker.js"
+          "src/scripts/job-filter.js"
         ),
-        "content-scripts/tab-switcher": path.resolve(
+        "scripts/notification-manager": path.resolve(
           __dirname,
-          "src/content-scripts/tab-switcher.js"
-        ),
-        "content-scripts/main": path.resolve(
-          __dirname,
-          "src/content-scripts/main.js"
+          "src/scripts/notification-manager.js"
         ),
       },
       output: {
@@ -47,7 +43,7 @@ export default defineConfig({
           if (chunkInfo.name === "background") {
             return "background.js";
           }
-          if (chunkInfo.name.startsWith("content-scripts/")) {
+          if (chunkInfo.name.startsWith("scripts/")) {
             return `${chunkInfo.name}.js`;
           }
           return `assets/${chunkInfo.name}-[hash].js`;

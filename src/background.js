@@ -1,78 +1,74 @@
-console.log("background.js loaded");
+import { JobMonitor } from "./scripts/job-monitor.js";
+import { IconManager } from "./scripts/icon-manager.js";
 
-let monitoringTabId = null;
+console.log("Upwork Job Alert - Background script loaded");
 
-// Set initial icon (stopped state)
-chrome.action.setIcon({
-  path: "icons/icon-stopped.png",
-});
+const jobMonitor = new JobMonitor();
+const iconManager = new IconManager();
 
-// Function to update icon based on status
-function updateIcon(isRunning) {
-  if (isRunning) {
-    chrome.action.setIcon({
-      path: "icons/icon-running.png",
+// Listen for messages from popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "start") {
+    console.log("🚀 Starting Upwork job monitoring...");
+    console.log("Config:", message.config);
+
+    const success = jobMonitor.start(
+      message.config,
+      message.bearerToken,
+      message.tokenExpiry
+    );
+
+    if (success) {
+      iconManager.setRunning();
+    }
+
+    sendResponse({ success });
+  } else if (message.action === "stop") {
+    console.log("⏹️ Stopping Upwork job monitoring...");
+
+    jobMonitor.stop();
+    iconManager.setStopped();
+
+    sendResponse({ success: true });
+  } else if (message.action === "checkStatus") {
+    const lastError = jobMonitor.getLastError();
+    const isRunning = jobMonitor.isRunning();
+
+    // Update icon based on status
+    if (
+      lastError &&
+      (lastError.includes("Authentication") || lastError.includes("Token"))
+    ) {
+      iconManager.setAuthError();
+    } else if (isRunning) {
+      iconManager.setRunning();
+    } else {
+      iconManager.setStopped();
+    }
+
+    sendResponse({
+      success: true,
+      isRunning: isRunning,
+      error: lastError,
     });
   } else {
-    chrome.action.setIcon({
-      path: "icons/icon-stopped.png",
-    });
-  }
-}
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "START") {
-    console.log("Background: Started with config", message.config);
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url.includes("upwork.com")) {
-        monitoringTabId = tabs[0].id;
-        console.log("Background: Monitoring tab set to", monitoringTabId);
-
-        chrome.storage.local.set({ monitoringTabId: monitoringTabId });
-
-        // Pass the config to the content script
-        chrome.tabs.sendMessage(tabs[0].id, {
-          type: "START",
-          config: message.config,
-        });
-
-        chrome.storage.local.set({ isRunning: true });
-        updateIcon(true);
-      }
-    });
+    sendResponse({ success: false });
   }
 
-  if (message.type === "STOP") {
-    console.log("Background: Stopped");
-
-    // Load it
-    chrome.storage.local.get(["monitoringTabId"], (result) => {
-      const savedTabId = result.monitoringTabId;
-      console.log("Loaded monitoringTabId:", savedTabId);
-
-      if (savedTabId) {
-        chrome.tabs.sendMessage(savedTabId, { type: "STOP" });
-        console.log("STOP sent to tab:", savedTabId);
-      }
-
-      // Set to null
-      monitoringTabId = null;
-      chrome.storage.local.set({ monitoringTabId: null });
-    });
-
-    chrome.storage.local.set({ isRunning: false });
-    updateIcon(false);
-  }
-
-  sendResponse({ ok: true });
+  return true;
 });
 
-// Clear monitoringTabId when tab is closed
-chrome.tabs.onRemoved.addListener((tabId) => {
-  if (tabId === monitoringTabId) {
-    monitoringTabId = null;
-    chrome.storage.local.set({ monitoringTabId: null });
-    chrome.storage.local.set({ isRunning: false });
-    updateIcon(false);
-  }
+chrome.notifications.onClicked.addListener((notificationId) => {
+  // Extract job ciphertext from notification ID
+  const ciphertext = notificationId.replace("job_", "");
+  const jobUrl = `https://www.upwork.com/jobs/${ciphertext}`;
+
+  // Open the job URL in a new tab
+  chrome.tabs.create({ url: jobUrl });
+
+  // Clear the notification
+  chrome.notifications.clear(notificationId);
 });
+
+// Initialize with stopped icon
+iconManager.setStopped();

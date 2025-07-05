@@ -1,5 +1,5 @@
 {
-  "name": "upwork-jobs-notifier-ext",
+  "name": "upwork-job-alert",
   "private": true,
   "version": "0.0.0",
   "type": "module",
