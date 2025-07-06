@@ -131,10 +131,6 @@ export class JobMonitor {
 
       const newJobs = await this.compareJobs(jobs, this.currentEndpoint);
 
-      console.log(
-        `Found ${jobs.length} jobs -> ${newJobs.length} jobs are new`
-      );
-
       if (newJobs.length > 0) {
         // Filter jobs based on user config
         const filteredJobs = filterJobs(newJobs, this.config);
@@ -177,8 +173,12 @@ export class JobMonitor {
       return [];
     }
 
-    // Return jobs that weren't previously saved
-    return jobs.filter((job) => !previousJobIds.has(job.id));
+    //jobs that weren't previously saved
+    const newJobs = jobs.filter((job) => !previousJobIds.has(job.id));
+
+    console.log(`Found ${jobs.length} jobs -> ${newJobs.length} jobs are new`);
+
+    return newJobs;
   }
 
   // Storage helper methods
