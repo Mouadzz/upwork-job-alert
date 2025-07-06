@@ -129,11 +129,11 @@ export class JobMonitor {
       const jobs = result.jobs;
       const endpointName = result.endpointName;
 
-      console.log(`Found ${jobs.length} jobs`);
-
       const newJobs = await this.compareJobs(jobs, this.currentEndpoint);
 
-      console.log(`${newJobs.length} new jobs`);
+      console.log(
+        `Found ${jobs.length} jobs -> ${newJobs.length} jobs are new`
+      );
 
       if (newJobs.length > 0) {
         // Filter jobs based on user config
@@ -147,13 +147,13 @@ export class JobMonitor {
             this.config
           );
         }
-      }
 
-      // Update saved jobs for this endpoint
-      await this.updateSavedJobs(
-        this.currentEndpoint,
-        jobs.map((job) => job.id)
-      );
+        // Add new jobs to saved jobs (accumulative, no duplicates)
+        await this.addJobsToSaved(
+          this.currentEndpoint,
+          newJobs.map((job) => job.id)
+        );
+      }
 
       // Toggle endpoint for next call
       this.currentEndpoint =
@@ -164,15 +164,16 @@ export class JobMonitor {
   }
 
   async compareJobs(jobs, endpointName) {
-    const currentJobIds = new Set(jobs.map((job) => job.id));
     const previousJobIds = await this.getSavedJobs(endpointName);
 
-    // First run: save jobs but don't return any as new
     if (await this.isFirstRun(endpointName)) {
-      console.log(
-        `Saved ${currentJobIds.size} jobs - (first run for ${endpointName})`
-      );
+      console.log(`First run for ${endpointName}`);
       await this.setFirstRunComplete(endpointName);
+      // For first run, save all current jobs and return empty array
+      await this.addJobsToSaved(
+        endpointName,
+        jobs.map((job) => job.id)
+      );
       return [];
     }
 
@@ -194,20 +195,26 @@ export class JobMonitor {
     }
   }
 
-  async updateSavedJobs(endpointName, jobIds) {
+  async addJobsToSaved(endpointName, newJobIds) {
     try {
       const result = await chrome.storage.local.get(
         this.STORAGE_KEYS.SAVED_JOBS
       );
       const savedJobs = result[this.STORAGE_KEYS.SAVED_JOBS] || {};
 
-      savedJobs[endpointName] = jobIds;
+      // Get existing job IDs and append new ones
+      const existingJobIds = savedJobs[endpointName] || [];
+      savedJobs[endpointName] = [...existingJobIds, ...newJobIds];
+
+      console.log(
+        `Added ${newJobIds.length} new jobs to ${endpointName}. Total: ${savedJobs[endpointName].length}`
+      );
 
       await chrome.storage.local.set({
         [this.STORAGE_KEYS.SAVED_JOBS]: savedJobs,
       });
     } catch (error) {
-      console.error("Error saving jobs:", error);
+      console.error("Error adding jobs to saved:", error);
     }
   }
 
