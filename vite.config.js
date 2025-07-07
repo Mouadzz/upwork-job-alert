@@ -25,6 +25,10 @@ export default defineConfig({
           __dirname,
           "src/scripts/format-telegram-msg.js"
         ),
+        "scripts/countrycode-to-name": path.resolve(
+          __dirname,
+          "src/scripts/countrycode-to-name.js"
+        ),
         "scripts/job-monitor": path.resolve(
           __dirname,
           "src/scripts/job-monitor.js"

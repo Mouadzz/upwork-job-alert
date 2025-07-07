@@ -1,3 +1,5 @@
+import { countryCodeToName } from "./countrycode-to-name.js";
+
 export function filterJobs(jobs, config) {
   const filteredJobs = jobs.filter((job) => {
     // Check job age
@@ -25,15 +27,27 @@ export function filterJobs(jobs, config) {
       return false;
     }
 
+    function normalizeCountry(country) {
+      if (!country) return "";
+      const normalized = country.toLowerCase().trim();
+      // Check if it's a country code first
+      return countryCodeToName[country.toUpperCase()] || normalized;
+    }
+
     // Check excluded countries
     if (config.excludedCountries && config.excludedCountries.trim()) {
       const excludedList = config.excludedCountries
         .split(",")
-        .map((country) => country.trim().toLowerCase())
+        .map((country) => normalizeCountry(country))
         .filter((country) => country.length > 0);
 
-      const clientCountry = job.client?.location?.country?.toLowerCase();
-      if (clientCountry && excludedList.includes(clientCountry)) {
+      const clientCountry = job.client?.location?.country;
+      const normalizedClientCountry = normalizeCountry(clientCountry);
+
+      if (
+        normalizedClientCountry &&
+        excludedList.includes(normalizedClientCountry)
+      ) {
         return false;
       }
     }
