@@ -22,7 +22,9 @@ export function filterJobs(jobs, config) {
     // Check minimum client spending
     if (
       config.minClientSpending > 0 &&
-      (job.client?.totalSpent || 0) < config.minClientSpending
+      (job.client?.totalSpent === null ||
+        job.client?.totalSpent === undefined ||
+        job.client?.totalSpent < config.minClientSpending)
     ) {
       return false;
     }

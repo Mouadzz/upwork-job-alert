@@ -25,9 +25,18 @@ export function formatTelegramJobMessage(job, tabName) {
     message += `🕒 Posted: _${timeAgo}_\n`;
   }
 
+  // Connect Price
+  if (job.connectPrice) {
+    message += `🪙 Connect Price: _${job.connectPrice} connects_\n`;
+  }
+
   // Budget
-  if (job.amount?.amount && job.amount.amount !== 0.0) {
-    message += `💰 Budget: _$${job.amount.amount}_\n`;
+  if (job.type === 1 && job.amount?.amount && job.amount.amount !== 0.0) {
+    // Fixed price job
+    message += `💰 Budget: _${job.amount.amount}$_\n`;
+  } else if (job.type === 2 && job.hourlyBudget?.min && job.hourlyBudget?.max) {
+    // Hourly job
+    message += `💰 Budget: _$${job.hourlyBudget.min} - $${job.hourlyBudget.max} / hr_\n`;
   }
 
   // Proposals
@@ -35,21 +44,21 @@ export function formatTelegramJobMessage(job, tabName) {
     message += `📬 Proposals: _${job.proposalsTier}_\n`;
   }
 
-  // Job type
-  if (job.type) {
-    const typeLabel =
-      job.type === 1 ? "Fixed price" : job.type === 2 ? "Hourly" : "Unknown";
-    message += `📄 Type: _${typeLabel}_\n`;
-  }
-
   // Duration
-  if (job.durationLabel) {
-    message += `⏳ Duration: _${job.durationLabel}_\n`;
+  if (job.duration) {
+    message += `⏳ Duration: _${job.duration}_\n`;
   }
 
   // Contractor tier
   if (job.tierText) {
     message += `⚙️ Level: _${job.tierText}_\n`;
+  }
+
+  // Job type
+  if (job.type) {
+    const typeLabel =
+      job.type === 1 ? "Fixed price" : job.type === 2 ? "Hourly" : "Unknown";
+    message += `📄 Type: _${typeLabel}_\n`;
   }
 
   if (job.client) {
@@ -61,7 +70,7 @@ export function formatTelegramJobMessage(job, tabName) {
     }
 
     // Spending
-    if (client.totalSpent !== undefined) {
+    if (client.totalSpent !== undefined && client.totalSpent !== null) {
       const spentNum = parseFloat(client.totalSpent || 0);
       let formattedSpent = `$${spentNum}`;
 
