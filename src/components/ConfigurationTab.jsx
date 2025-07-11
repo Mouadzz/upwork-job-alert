@@ -35,7 +35,7 @@ const ConfigurationTab = ({ config, onConfigChange }) => {
             onChange={(e) =>
               onConfigChange("requirePaymentVerification", e.target.checked)
             }
-            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 accent-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
           />
           <span className="text-xs">Require Payment Verification</span>
         </label>
@@ -111,7 +111,7 @@ const ConfigurationTab = ({ config, onConfigChange }) => {
             onChange={(e) =>
               onConfigChange("chromeNotifications", e.target.checked)
             }
-            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 accent-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
           />
           <Bell className="w-4 h-4 text-gray-400" />
           <span className="text-xs">Chrome Notifications</span>
@@ -124,7 +124,7 @@ const ConfigurationTab = ({ config, onConfigChange }) => {
             onChange={(e) =>
               onConfigChange("telegramNotifications", e.target.checked)
             }
-            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 accent-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
           />
           <Send className="w-4 h-4 text-gray-400" />
           <span className="text-xs">Telegram Notifications</span>
