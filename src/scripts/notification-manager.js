@@ -6,22 +6,28 @@ export class NotificationManager {
     this.CHAT_ID = import.meta.env.VITE_CHAT_ID;
   }
 
-  async sendAuthErrorNotification() {
+  async sendErrorNotification(message) {
     try {
       await this.ensureOffscreenDocument();
 
       await chrome.notifications.create({
         type: "basic",
-        iconUrl: "icons/icon-auth-error.png",
-        title: "Upwork Job Alert - Authentication Error",
-        message:
-          "You are not logged in. Please login to continue monitoring jobs.",
+        iconUrl: "icons/icon-error.png",
+        title: "Upwork Job Alert - Error",
+        message: message,
         priority: 2,
       });
 
       chrome.runtime.sendMessage({ type: "PLAY_SOUND" });
+
+      if (!this.BOT_TOKEN || !this.CHAT_ID) {
+        console.error("Telegram bot token or chat ID not configured");
+        return;
+      }
+
+      await this.sendTelegramMessage(`Upwork Job Alert - Error\n\n${message} !!!`);
     } catch (error) {
-      console.error("Error sending auth error notification:", error);
+      console.error("Error sending error notification:", error);
     }
   }
 
@@ -29,19 +35,19 @@ export class NotificationManager {
     try {
       // Send Chrome notifications if enabled
       if (config.chromeNotifications) {
-        await this.sendChromeNotifications(jobs, endpointName);
+        await this.sendChromeJobNotifications(jobs, endpointName);
       }
 
       // Send Telegram notifications if enabled
       if (config.telegramNotifications) {
-        await this.sendTelegramNotifications(jobs, endpointName);
+        await this.sendTelegramJobNotifications(jobs, endpointName);
       }
     } catch (error) {
       console.error("Error sending notifications:", error);
     }
   }
 
-  async sendChromeNotifications(jobs, endpointName) {
+  async sendChromeJobNotifications(jobs, endpointName) {
     try {
       // Create offscreen document once before sending notifications
       await this.ensureOffscreenDocument();
@@ -99,7 +105,7 @@ export class NotificationManager {
     return `${Math.floor(diff / 86400)}d ago`;
   }
 
-  async sendTelegramNotifications(jobs, endpointName) {
+  async sendTelegramJobNotifications(jobs, endpointName) {
     if (!this.BOT_TOKEN || !this.CHAT_ID) {
       console.error("Telegram bot token or chat ID not configured");
       return;

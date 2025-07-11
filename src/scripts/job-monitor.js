@@ -78,13 +78,13 @@ export class JobMonitor {
     }, this.config.fetchInterval * 1000);
   }
 
-  async handleAuthError() {
-    console.log("Authentication error detected");
+  async handleError(message) {
+    console.log(`Error: ${message}`);
     console.log("⏹️ Stopping Upwork job monitoring...");
 
-    this.iconManager.setAuthError();
+    this.iconManager.setError();
 
-    await this.notificationManager.sendAuthErrorNotification();
+    await this.notificationManager.sendErrorNotification(message);
 
     this.stop();
 
@@ -105,7 +105,7 @@ export class JobMonitor {
     try {
       // Check token expiration
       if (this.isTokenExpired()) {
-        await this.handleAuthError();
+        await this.handleError("Token expired");
         return;
       }
 
@@ -117,12 +117,8 @@ export class JobMonitor {
         this.bearerToken
       );
 
-      if (result.authError) {
-        await this.handleAuthError();
-        return;
-      }
-
       if (!result.success) {
+        await this.handleError(result.error || "Unknown error");
         return;
       }
 
@@ -156,6 +152,7 @@ export class JobMonitor {
         this.currentEndpoint === "bestMatch" ? "recentWork" : "bestMatch";
     } catch (error) {
       console.error("Error fetchAndProcessJobs:", error);
+      await this.handleError("other", error.message);
     }
   }
 

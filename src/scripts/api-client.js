@@ -8,7 +8,7 @@ export class ApiClient {
     this.recentWorkQuery =
       '{"query":"\\n  query($limit: Int, $toTime: String) {\\n    mostRecentJobsFeed(limit: $limit, toTime: $toTime) {\\n      results {\\n        id\\n        title\\n        ciphertext\\n        description\\n        type\\n        duration\\n        amount {\\n          amount\\n        }\\n        publishedOn:publishedDateTime\\n        connectPrice\\n        client {\\n          totalHires\\n          totalSpent\\n          paymentVerificationStatus\\n          location {\\n            country\\n          }\\n          totalReviews\\n          totalFeedback\\n        }\\n        tierText\\n        proposalsTier\\n        attrs:skills {\\n          prettyName:prefLabel\\n        }\\n        hourlyBudget {\\n          min\\n          max\\n        }\\n      }\\n    }\\n  }\\n","variables":{"limit":10}}';
   }
-  
+
   async fetchJobs(endpointName, bearerToken) {
     const requestBody =
       endpointName === "bestMatch" ? this.bestMatchQuery : this.recentWorkQuery;
@@ -37,11 +37,15 @@ export class ApiClient {
 
       // Handle auth errors
       if (response.status === 401) {
-        return { success: false, authError: true };
+        return { success: false, error: "Authentication failed" };
       }
 
+      // Handle other HTTP status errors
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return {
+          success: false,
+          error: `Status -> ${result.statusCode}: ${result.statusText}`,
+        };
       }
 
       const data = await response.json();
@@ -56,13 +60,11 @@ export class ApiClient {
         jobs: jobs,
         endpointName:
           endpointName === "bestMatch" ? "Best Match" : "Recent Work",
-        authError: false,
       };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        authError: false,
       };
     }
   }

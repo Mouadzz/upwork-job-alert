@@ -19,13 +19,13 @@ export class IconManager {
     });
   }
 
-  setAuthError() {
+  setError() {
     chrome.action.setIcon({
-      path: "icons/icon-auth-error.png",
+      path: "icons/icon-error.png",
     });
 
     chrome.action.setTitle({
-      title: "Upwork Job Alert - Authentication Error",
+      title: "Upwork Job Alert - Error",
     });
   }
 }
