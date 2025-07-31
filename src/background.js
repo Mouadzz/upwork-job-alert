@@ -6,6 +6,13 @@ console.log("Upwork Job Alert - Background script loaded");
 const jobMonitor = new JobMonitor();
 const iconManager = new IconManager();
 
+// Handle extension icon clicks - open full page
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("index.html"),
+  });
+});
+
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "start") {
@@ -53,7 +60,6 @@ chrome.notifications.onClicked.addListener((notificationId) => {
   // Clear the notification
   chrome.notifications.clear(notificationId);
 });
-
 
 // Initialize with stopped icon
 iconManager.setStopped();

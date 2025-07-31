@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
-import { Settings, FileText } from "lucide-react";
 import Header from "./components/Header";
-import TabNavigation from "./components/TabNavigation";
-import ConfigurationTab from "./components/ConfigurationTab";
-import CoverLetterTab from "./components/CoverLetterTab";
+import ConfigContainer from "./components/ConfigContainer";
 import ControlButton from "./components/ControlButton";
 import ErrorDisplay from "./components/ErrorDisplay";
 
-const Popup = () => {
+const UpworkMonitor = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("configuration");
   const [config, setConfig] = useState({
     requirePaymentVerification: false,
     minClientSpending: 0,
@@ -21,11 +17,9 @@ const Popup = () => {
     maxJobAge: 5,
   });
 
-  // Check if monitoring is running on component mount
   useEffect(() => {
     checkRunningStatus();
 
-    // Listen for status changes from background
     const messageListener = (message, sender, sendResponse) => {
       if (message.action === "statusChanged") {
         setIsRunning(message.isRunning);
@@ -33,11 +27,7 @@ const Popup = () => {
     };
 
     chrome.runtime.onMessage.addListener(messageListener);
-
-    // Cleanup listener on unmount
-    return () => {
-      chrome.runtime.onMessage.removeListener(messageListener);
-    };
+    return () => chrome.runtime.onMessage.removeListener(messageListener);
   }, []);
 
   const checkRunningStatus = async () => {
@@ -45,7 +35,6 @@ const Popup = () => {
       const response = await chrome.runtime.sendMessage({
         action: "isRunning",
       });
-
       if (response.success) {
         setIsRunning(response.isRunning);
       }
@@ -63,11 +52,8 @@ const Popup = () => {
           cookie.value.startsWith("oauth2v2_")
       );
 
-      if (authCookies.length === 0) {
-        return null;
-      }
+      if (authCookies.length === 0) return null;
 
-      // Get the cookie with the latest expiration date (newest token)
       const latestAuthCookie = authCookies.reduce((latest, current) => {
         return current.expirationDate > latest.expirationDate
           ? current
@@ -85,50 +71,34 @@ const Popup = () => {
   };
 
   const validateConfig = () => {
-    // Check fetch interval
-    if (
-      !config.fetchInterval ||
-      config.fetchInterval === "" ||
-      config.fetchInterval < 20
-    ) {
+    if (!config.fetchInterval || config.fetchInterval < 20) {
       setError(
-        "Fetch interval must be at least 20 seconds to avoid spamming Upwork's servers. We recommend 30 seconds or more for better reliability."
+        "Fetch interval must be at least 20 seconds to avoid spamming Upwork's servers."
       );
       return false;
     }
-
-    // Check max job age (0 is allowed - means no age filter)
     if (config.maxJobAge < 0) {
       setError("Job age filter cannot be negative.");
       return false;
     }
-
-    // Check min client spending
     if (config.minClientSpending < 0) {
       setError("Min client spending cannot be negative.");
       return false;
     }
-
     return true;
   };
 
   const handleStart = async () => {
     setError(null);
 
-    // Validate configuration first
-    if (!validateConfig()) {
-      return;
-    }
+    if (!validateConfig()) return;
 
-    // Get fresh token
     const tokenInfo = await getTokenInfo();
-
     if (!tokenInfo) {
       setError("You are not logged in. Please log in to Upwork and try again.");
       return;
     }
 
-    // Check if token is expired
     if (new Date() >= new Date(tokenInfo.expiry)) {
       setError(
         "Your login session has expired. Please log in to Upwork again."
@@ -169,65 +139,33 @@ const Popup = () => {
   };
 
   const handleConfigChange = (key, value) => {
-    setConfig((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setConfig((prev) => ({ ...prev, [key]: value }));
   };
-
-  const handleCloseError = () => {
-    setError(null);
-  };
-
-  const tabs = [
-    {
-      id: "configuration",
-      label: "Configuration",
-      icon: Settings,
-    },
-    {
-      id: "coverLetter",
-      label: "Cover Letter",
-      icon: FileText,
-    },
-  ];
 
   return (
-    <div className="w-[420px] h-[600px] bg-gray-900 text-white font-sans flex flex-col relative">
-      {/* Toast Notification */}
-      <ErrorDisplay error={error} onClose={handleCloseError} />
+    <div className="min-h-screen bg-gray-900 text-white font-sans">
+      <ErrorDisplay error={error} onClose={() => setError(null)} />
 
-      {/* Header */}
-      <Header />
+      <div className="max-w-xl mx-auto px-8 py-10">
+        <Header />
 
-      {/* Tab Navigation */}
-      <TabNavigation
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
-
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        {activeTab === "configuration" && (
-          <ConfigurationTab
+        <div className="mt-8">
+          <ConfigContainer
             config={config}
             onConfigChange={handleConfigChange}
           />
-        )}
-        {activeTab === "coverLetter" && <CoverLetterTab />}
-      </div>
+        </div>
 
-      {/* Control Button - reduced padding */}
-      <div className="p-4 border-t border-gray-800">
-        <ControlButton
-          isRunning={isRunning}
-          onStart={handleStart}
-          onStop={handleStop}
-        />
+        <div className="mt-8 flex justify-center">
+          <ControlButton
+            isRunning={isRunning}
+            onStart={handleStart}
+            onStop={handleStop}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-export default Popup;
+export default UpworkMonitor;

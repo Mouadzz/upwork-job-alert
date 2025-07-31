@@ -32,11 +32,11 @@ const ErrorDisplay = ({ error, type = "error", onClose }) => {
   const getIcon = () => {
     switch (type) {
       case "success":
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
+        return <CheckCircle className="w-5 h-5 text-green-400" />;
       case "info":
-        return <Info className="w-4 h-4 text-blue-400" />;
+        return <Info className="w-5 h-5 text-blue-400" />;
       default:
-        return <AlertTriangle className="w-4 h-4 text-red-400" />;
+        return <AlertTriangle className="w-5 h-5 text-red-400" />;
     }
   };
 
@@ -53,7 +53,7 @@ const ErrorDisplay = ({ error, type = "error", onClose }) => {
 
   return (
     <div
-      className={`fixed top-3 left-3 right-3 z-50 transform transition-all duration-300 ease-out ${
+      className={`fixed top-4 left-4 right-4 z-50 transform transition-all duration-300 ease-out ${
         isAnimating
           ? "translate-y-0 opacity-100 scale-100"
           : "-translate-y-full opacity-0 scale-95"
@@ -62,18 +62,18 @@ const ErrorDisplay = ({ error, type = "error", onClose }) => {
       <div
         className={`rounded-lg border backdrop-blur-sm shadow-lg ${getStyles()}`}
       >
-        <div className="flex items-start space-x-2 p-3">
+        <div className="flex items-start space-x-3 p-4">
           <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs leading-relaxed whitespace-pre-line">
+            <p className="text-sm leading-relaxed whitespace-pre-line">
               {error}
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="flex-shrink-0 ml-1 p-0.5 rounded-full hover:bg-white/10 transition-colors duration-200"
+            className="flex-shrink-0 ml-2 p-1 rounded-full hover:bg-white/10 transition-colors duration-200"
           >
-            <X className="w-3 h-3" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
