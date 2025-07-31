@@ -15,7 +15,7 @@ A Chrome extension that monitors new jobs on Upwork using their GraphQL API and 
   - Maximum job age (in minutes)
 - Click notifications to open job directly on Upwork
 
-### Extension Popup
+### Extension Page
 
 ![Extension Configuration](screenshots/extension-config.png)
 
