@@ -4,15 +4,16 @@ A Chrome extension that monitors new jobs on Upwork using their GraphQL API and 
 
 ## Features
 
-- 🔍 Real-time job monitoring using Upwork's GraphQL API
-- 📱 Chrome notifications with sound alerts
-- 💬 Telegram notifications support
-- 🎯 Advanced filtering options:
+- Real-time job monitoring using Upwork's GraphQL API
+- Three job feed options: Best Match, Most Recent, and My Feed
+- Chrome notifications with sound alerts
+- Telegram notifications support
+- Advanced filtering options:
   - Payment verification requirement
   - Minimum client spending
   - Excluded countries
   - Maximum job age (in minutes)
-- 🔗 Click notifications to open job directly on Upwork
+- Click notifications to open job directly on Upwork
 
 ### Extension Popup
 
@@ -63,14 +64,17 @@ npm run build
 
 ### Job Monitoring
 
-1. Click "Start Monitoring" to begin job monitoring
-2. The extension will automatically fetch new jobs based on your configured interval
-3. When new jobs match your filters, you'll receive notifications
-4. Click on Chrome notifications to open the job directly on Upwork
-5. Click "Stop Monitoring" to pause the extension
+1. Select your preferred job feed (Best Match, Most Recent, or My Feed)
+2. Configure your filtering options
+3. Click "Start Monitoring" to begin job monitoring
+4. The extension will check for new jobs at your configured interval using the selected feed
+5. When new jobs match your filters, you'll receive notifications
+6. Click on Chrome notifications to open the job directly on Upwork
+7. Click "Stop Monitoring" to pause the extension
 
 ## Configuration Options
 
+- **Job Feed**: Choose between Best Match, Most Recent, or My Feed
 - **Fetch Interval**: How often to check for new jobs (seconds)
 - **Payment Verified**: Only show jobs from payment-verified clients
 - **Min Client Spending**: Minimum amount client must have spent on Upwork

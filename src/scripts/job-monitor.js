@@ -17,7 +17,6 @@ export class JobMonitor {
       FIRST_RUN: "upwork_monitor_first_run",
     };
 
-    this.currentEndpoint = "bestMatch";
     this.lastError = null;
 
     // Initialize dependencies
@@ -80,7 +79,7 @@ export class JobMonitor {
 
   async handleError(message) {
     console.log(`Error: ${message}`);
-    console.log("⏹️ Stopping Upwork job monitoring...");
+    console.log("Stopping Upwork job monitoring...");
 
     this.iconManager.setError();
 
@@ -109,13 +108,11 @@ export class JobMonitor {
         return;
       }
 
-      // Fetch jobs from current endpoint
-      console.log(`Fetching ${this.currentEndpoint}...`);
+      const endpoint = this.config.endpoint || "bestMatch";
 
-      const result = await this.apiClient.fetchJobs(
-        this.currentEndpoint,
-        this.bearerToken
-      );
+      console.log(`Fetching ${endpoint}...`);
+
+      const result = await this.apiClient.fetchJobs(endpoint, this.bearerToken);
 
       if (!result.success) {
         await this.handleError(result.error || "Unknown error");
@@ -125,7 +122,7 @@ export class JobMonitor {
       const jobs = result.jobs;
       const endpointName = result.endpointName;
 
-      const newJobs = await this.compareJobs(jobs, this.currentEndpoint);
+      const newJobs = await this.compareJobs(jobs);
 
       if (newJobs.length > 0) {
         // Filter jobs based on user config
@@ -140,37 +137,26 @@ export class JobMonitor {
           );
         }
 
-        // Add new jobs to saved jobs (accumulative, no duplicates)
-        await this.addJobsToSaved(
-          this.currentEndpoint,
-          newJobs.map((job) => job.id)
-        );
+        await this.addJobsToSaved(newJobs.map((job) => job.id));
       }
-
-      // Toggle endpoint for next call
-      this.currentEndpoint =
-        this.currentEndpoint === "bestMatch" ? "recentWork" : "bestMatch";
     } catch (error) {
       console.error("Error fetchAndProcessJobs:", error);
-      await this.handleError("other", error.message);
+      await this.handleError(`Unknown Error: ${error.message}`);
     }
   }
 
-  async compareJobs(jobs, endpointName) {
-    const previousJobIds = await this.getSavedJobs(endpointName);
+  async compareJobs(jobs) {
+    const previousJobIds = await this.getSavedJobs();
 
-    if (await this.isFirstRun(endpointName)) {
-      console.log(`First run for ${endpointName}`);
-      await this.setFirstRunComplete(endpointName);
+    if (await this.isFirstRun()) {
+      console.log("First run - saving initial jobs");
+      await this.setFirstRunComplete();
       // For first run, save all current jobs and return empty array
-      await this.addJobsToSaved(
-        endpointName,
-        jobs.map((job) => job.id)
-      );
+      await this.addJobsToSaved(jobs.map((job) => job.id));
       return [];
     }
 
-    //jobs that weren't previously saved
+    // Jobs that weren't previously saved
     const newJobs = jobs.filter((job) => !previousJobIds.has(job.id));
 
     console.log(`Found ${jobs.length} jobs -> ${newJobs.length} jobs are new`);
@@ -178,67 +164,57 @@ export class JobMonitor {
     return newJobs;
   }
 
-  // Storage helper methods
-  async getSavedJobs(endpointName) {
+  async getSavedJobs() {
     try {
       const result = await chrome.storage.local.get(
         this.STORAGE_KEYS.SAVED_JOBS
       );
-      const savedJobs = result[this.STORAGE_KEYS.SAVED_JOBS] || {};
-      return new Set(savedJobs[endpointName] || []);
+      const savedJobs = result[this.STORAGE_KEYS.SAVED_JOBS] || [];
+      return new Set(savedJobs);
     } catch (error) {
       console.error("Error reading saved jobs:", error);
       return new Set();
     }
   }
 
-  async addJobsToSaved(endpointName, newJobIds) {
+  async addJobsToSaved(newJobIds) {
     try {
       const result = await chrome.storage.local.get(
         this.STORAGE_KEYS.SAVED_JOBS
       );
-      const savedJobs = result[this.STORAGE_KEYS.SAVED_JOBS] || {};
+      const savedJobs = result[this.STORAGE_KEYS.SAVED_JOBS] || [];
 
-      // Get existing job IDs and append new ones
-      const existingJobIds = savedJobs[endpointName] || [];
-      savedJobs[endpointName] = [...existingJobIds, ...newJobIds];
+      // Append new job IDs to existing ones
+      const updatedJobs = [...savedJobs, ...newJobIds];
 
       console.log(
-        `Added ${newJobIds.length} new jobs to ${endpointName}. Total: ${savedJobs[endpointName].length}`
+        `Added ${newJobIds.length} new jobs. Total: ${updatedJobs.length}`
       );
 
       await chrome.storage.local.set({
-        [this.STORAGE_KEYS.SAVED_JOBS]: savedJobs,
+        [this.STORAGE_KEYS.SAVED_JOBS]: updatedJobs,
       });
     } catch (error) {
       console.error("Error adding jobs to saved:", error);
     }
   }
 
-  async isFirstRun(endpointName) {
+  async isFirstRun() {
     try {
       const result = await chrome.storage.local.get(
         this.STORAGE_KEYS.FIRST_RUN
       );
-      const firstRunData = result[this.STORAGE_KEYS.FIRST_RUN] || {};
-      return firstRunData[endpointName] !== false;
+      return result[this.STORAGE_KEYS.FIRST_RUN] !== false;
     } catch (error) {
       console.error("Error reading first run data:", error);
       return true;
     }
   }
 
-  async setFirstRunComplete(endpointName) {
+  async setFirstRunComplete() {
     try {
-      const result = await chrome.storage.local.get(
-        this.STORAGE_KEYS.FIRST_RUN
-      );
-      const firstRunData = result[this.STORAGE_KEYS.FIRST_RUN] || {};
-
-      firstRunData[endpointName] = false;
-
       await chrome.storage.local.set({
-        [this.STORAGE_KEYS.FIRST_RUN]: firstRunData,
+        [this.STORAGE_KEYS.FIRST_RUN]: false,
       });
     } catch (error) {
       console.error("Error saving first run data:", error);

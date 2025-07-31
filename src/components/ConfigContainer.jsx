@@ -1,7 +1,6 @@
-import { Bell, Send } from "lucide-react";
+import { Bell, Send, ChevronDown } from "lucide-react";
 
 const ConfigContainer = ({ config, onConfigChange }) => {
-  // Secure number input handler
   const handleNumberInput = (key, value, min = 0) => {
     // Remove any non-numeric characters
     const cleanValue = value.replace(/[^0-9]/g, "");
@@ -14,7 +13,6 @@ const ConfigContainer = ({ config, onConfigChange }) => {
 
     const numValue = parseInt(cleanValue);
 
-    // For fetch interval, enforce minimum of 20 but allow typing
     if (key === "fetchInterval") {
       // Allow any number to be typed, but validate on start
       onConfigChange(key, numValue);
@@ -25,8 +23,32 @@ const ConfigContainer = ({ config, onConfigChange }) => {
     }
   };
 
+  const endpoints = [
+    { value: "myFeed", label: "My Feed" },
+    { value: "bestMatch", label: "Best Match" },
+    { value: "mostRecent", label: "Most Recent" },
+  ];
+
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <label className="block text-sm text-gray-300">Job Feed</label>
+        <div className="relative">
+          <select
+            value={config.endpoint || "myFeed"}
+            onChange={(e) => onConfigChange("endpoint", e.target.value)}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
+          >
+            {endpoints.map((endpoint) => (
+              <option key={endpoint.value} value={endpoint.value}>
+                {endpoint.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
       <div className="space-y-4">
         <label className="flex items-center space-x-3 cursor-pointer">
           <input

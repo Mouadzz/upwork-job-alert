@@ -8,6 +8,7 @@ const UpworkMonitor = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [config, setConfig] = useState({
+    endpoint: "myFeed",
     requirePaymentVerification: false,
     minClientSpending: 0,
     excludedCountries: "India, Pakistan, Bangladesh",
@@ -107,6 +108,9 @@ const UpworkMonitor = () => {
     }
 
     try {
+      // Log the config to see if endpoint is being passed correctly
+      console.log("Starting with config:", config);
+
       const response = await chrome.runtime.sendMessage({
         action: "start",
         config: config,
@@ -139,6 +143,7 @@ const UpworkMonitor = () => {
   };
 
   const handleConfigChange = (key, value) => {
+    console.log(`Config changed: ${key} = ${value}`); // Debug log
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
 

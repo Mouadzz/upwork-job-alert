@@ -6,19 +6,14 @@ console.log("Upwork Job Alert - Background script loaded");
 const jobMonitor = new JobMonitor();
 const iconManager = new IconManager();
 
-// Handle extension icon clicks - open full page
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({
     url: chrome.runtime.getURL("index.html"),
   });
 });
 
-// Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "start") {
-    console.log("🚀 Starting Upwork job monitoring...");
-    console.log("Config:", message.config);
-
     const success = jobMonitor.start(
       message.config,
       message.bearerToken,
@@ -31,7 +26,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     sendResponse({ success });
   } else if (message.action === "stop") {
-    console.log("⏹️ Stopping Upwork job monitoring...");
+    console.log("Stopping Upwork job monitoring...");
 
     jobMonitor.stop();
     iconManager.setStopped();
@@ -50,16 +45,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.notifications.onClicked.addListener((notificationId) => {
-  // Extract job ciphertext from notification ID
   const ciphertext = notificationId.replace("job_", "");
   const jobUrl = `https://www.upwork.com/jobs/${ciphertext}`;
 
-  // Open the job URL in a new tab
   chrome.tabs.create({ url: jobUrl });
 
-  // Clear the notification
   chrome.notifications.clear(notificationId);
 });
 
-// Initialize with stopped icon
 iconManager.setStopped();

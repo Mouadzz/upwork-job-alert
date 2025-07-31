@@ -31,9 +31,9 @@ export function formatTelegramJobMessage(job, tabName) {
   }
 
   // Budget
-  if (job.type === 1 && job.amount?.amount && job.amount.amount !== 0.0) {
+  if (job.type === 1 && job.amount && job.amount !== 0.0) {
     // Fixed price job
-    message += `💰 Budget: _${job.amount.amount}$_\n`;
+    message += `💰 Budget: _${job.amount}$_\n`;
   } else if (job.type === 2 && job.hourlyBudget?.min && job.hourlyBudget?.max) {
     // Hourly job
     message += `💰 Budget: _$${job.hourlyBudget.min} - $${job.hourlyBudget.max} / hr_\n`;
@@ -110,15 +110,11 @@ export function formatTelegramJobMessage(job, tabName) {
     }
   }
 
-  // Skills (from `attrs`)
-  if (job.attrs && job.attrs.length > 0) {
-    const skillNames = job.attrs
-      .filter((attr) => attr.prettyName)
-      .slice(0, 6)
-      .map((attr) => attr.prettyName)
-      .join(", ");
+  // Skills
+  if (job.skills && job.skills.length > 0) {
+    const skillNames = job.skills.slice(0, 6).join(", ");
     message += `\n🛠 Skills: _${skillNames}${
-      job.attrs.length > 6 ? "..." : ""
+      job.skills.length > 6 ? "..." : ""
     }_\n`;
   }
 

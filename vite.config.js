@@ -17,6 +17,10 @@ export default defineConfig({
           __dirname,
           "src/scripts/api-client.js"
         ),
+        "scripts/job-parser": path.resolve(
+          __dirname,
+          "src/scripts/job-parser.js"
+        ),
         "scripts/icon-manager": path.resolve(
           __dirname,
           "src/scripts/icon-manager.js"
